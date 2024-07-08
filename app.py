@@ -21,7 +21,7 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 st.set_page_config(page_title = "DSB01RT",
                    page_icon = ":panda_face:",
-                   layout = "wide",
+                   layout = 'centered',
                    initial_sidebar_state = 'expanded')
 
 
