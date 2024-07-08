@@ -185,7 +185,7 @@ def main():
 
                 return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-        ctx = webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False)
+        ctx = webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False, async_transform=True)
         if ctx.video_transformer:
             st.write("### Predictions")
             st.write(ctx.video_transformer.last_predicted_gesture)
