@@ -125,10 +125,10 @@ def main():
         # Function to apply hand gesture recognition
         class VideoTransformer(VideoTransformerBase):
             def __init__(self):
-                self.hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.7, min_tracking_confidence=0.7)
-                self.predictions = deque(maxlen=10)
-                self.last_predicted_gesture = ""
-                self.gesture_history = ""
+                self.hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
+                # self.predictions = deque(maxlen=10) 
+                self.last_predicted_gesture = None
+                self.gesture_history = []
 
             def transform(self, frame: av.VideoFrame):
                 img = frame.to_ndarray(format="bgr24")
@@ -185,13 +185,20 @@ def main():
 
                 return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-        ctx = webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False, async_transform=True)
-        if ctx.video_transformer:
+        ctx = webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False, async_transform=False)
+        # if ctx.video_transformer:
+        if ctx.state.playing:
             st.write("### Predictions")
-            st.write(ctx.video_transformer.last_predicted_gesture)
+            if hasattr(ctx.video_transformer, 'last_predicted_gesture'):
+                st.write(ctx.video_transformer.last_predicted_gesture)
+            else:
+                st.write("No gesture prediction available.")
+            
             st.write("### Gesture History")
-            st.write(ctx.video_transformer.gesture_history)
-
+            if hasattr(ctx.video_transformer, 'gesture_history'):
+                st.write(ctx.video_transformer.gesture_history)
+            else:
+                st.write("No gesture history available.")
 
 
 if __name__ == "__main__":
