@@ -38,7 +38,7 @@ def main():
         st.write("Welcome to the ASL Gesture Recognition App.")
         st.write("This web app recognizes American Sign Language (ASL) gestures using hand landmarks.")
 
-        image_path = os.path.join("/Users/DELL/Desktop/Project_3/sources", "homepage_image.jpg")
+        image_path = os.path.join("sources", "homepage_image.jpg")
         st.image(image_path, width = 400)
         st.write("""
             ## Overview
