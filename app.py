@@ -37,8 +37,9 @@ def main():
         st.subheader("Home")
         st.write("Welcome to the ASL Gesture Recognition App.")
         st.write("This web app recognizes American Sign Language (ASL) gestures using hand landmarks.")
-        
-        st.image("/Users/DELL/Desktop/ASL_marios/sources/homepage_image.jpg", width = 400)
+
+        image_path = os.path.join("sources", "homepage_image.jpg")
+        st.image(image_path, width = 400)
         st.write("""
             ## Overview
             American Sign Language (ASL) is a complete language that uses gestures and visual signs to communicate with people who are deaf or hard of hearing. ASL has its own grammar and syntax, making it a fully-fledged language in its own right.
@@ -62,9 +63,11 @@ def main():
         """)
     elif choice == "Data":
         st.header("Dataset Visualization")
-
         # Load the dataset
+        csv_path = os.path.join("hand_landmarks_augment.csv")
+        df = pd.read_csv(csv_path)
         df = pd.read_csv('/Users/DELL/Desktop/ASL_marios/hand_landmarks_augment.csv') 
+
         
 
         data_choice = st.sidebar.selectbox("Data Analysis", ["Show Dataset", "Label Distribution", "Show hand landmarks"])
@@ -89,8 +92,9 @@ def main():
         st.title("Live-Stream")
  
         st.sidebar.success("Use the image grid below to practice ASL gestures. The app will recognize your gestures in real-time.")
-
-        st.sidebar.image('/Users/DELL/Desktop/ASL_marios/sources/image_grid.jpg', caption="Image Grid", use_column_width=True)
+        image_path = os.path.join("sources", "image_grid.jpg")
+        st.sidebar.image(image_path, caption="Image Grid", use_column_width=True)
+        # st.sidebar.image('/Users/DELL/Desktop/ASL_marios/sources/image_grid.jpg', caption="Image Grid", use_column_width=True)
 
 
         # filter = "none"
@@ -113,8 +117,8 @@ def main():
             def __init__(self):
                 self.hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.7, min_tracking_confidence=0.7)
                 self.predictions = deque(maxlen=10)
-                self.last_predicted_gesture = ""
-                self.gesture_history = ""
+                # self.last_predicted_gesture = ""
+                # self.gesture_history = ""
 
             def transform(self, frame: av.VideoFrame):
                 img = frame.to_ndarray(format="bgr24")
@@ -158,7 +162,7 @@ def main():
                         smoothed_prediction = max(set(self.predictions), key=self.predictions.count)
 
                         # Update last predicted gesture
-                        self.last_predicted_gesture = f'Predicted Gesture: {smoothed_prediction}'
+                        # self.last_predicted_gesture = f'Predicted Gesture: {smoothed_prediction}'
 
                         # Draw a bounding box around the hand
                         x1, y1 = int(min(x_) * W) - 10, int(min(y_) * H) - 10
@@ -171,12 +175,12 @@ def main():
 
                 return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-        ctx = webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False)
-        if ctx.video_transformer:
-            st.write("### Predictions")
-            st.write(ctx.video_transformer.last_predicted_gesture)
-            st.write("### Gesture History")
-            st.write(ctx.video_transformer.gesture_history)
+        webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False)
+        # if ctx.video_transformer:
+        #     st.write("### Predictions")
+        #     st.write(ctx.video_transformer.last_predicted_gesture)
+        #     st.write("### Gesture History")
+        #     st.write(ctx.video_transformer.gesture_history)
 
 
 
