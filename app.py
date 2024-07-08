@@ -66,11 +66,7 @@ def main():
         # Load the dataset
         csv_path = os.path.join("sources", "hand_landmarks_augment.csv")
         df = pd.read_csv(csv_path)
-        # df = pd.read_csv(csv_path)
-        # df = pd.read_csv('/Users/DELL/Desktop/ASL_marios/hand_landmarks_augment.csv') 
-
         
-
         data_choice = st.sidebar.selectbox("Data Analysis", ["Show Dataset", "Label Distribution", "Show hand landmarks"])
 
         if data_choice == "Show Dataset":
@@ -86,11 +82,11 @@ def main():
             st.sidebar.write("### Hand Gesture Image")
             letter = st.sidebar.text_input("Enter a letter (A-Z):", 'B')
             if letter:
-                show_random_image(letter, data_dir='/Users/DELL/Desktop/Project_3/asl_alphabet_test')
+                show_random_image(letter, data_dir=r'C:\Users\DELL\Desktop\Project_3\asl_alphabet_test')
     
     elif choice == "Real_time_Recognition":
 
-        st.title("Live-Stream")
+        st.title("Live-Streaming ASL Gesture Recognition App")
  
         st.sidebar.success("Use the image grid below to practice ASL gestures. The app will recognize your gestures in real-time.")
         image_path = os.path.join("sources", "image_grid.jpg")
