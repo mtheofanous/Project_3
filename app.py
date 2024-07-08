@@ -64,8 +64,9 @@ def main():
     elif choice == "Data":
         st.header("Dataset Visualization")
         # Load the dataset
-        csv_path = os.path.join("/Users/DELL/Desktop/Project_3/hand_landmarks_augment.csv")
+        csv_path = os.path.join("sources", "hand_landmarks_augment.csv")
         df = pd.read_csv(csv_path)
+        # df = pd.read_csv(csv_path)
         # df = pd.read_csv('/Users/DELL/Desktop/ASL_marios/hand_landmarks_augment.csv') 
 
         
@@ -92,17 +93,17 @@ def main():
         st.title("Live-Stream")
  
         st.sidebar.success("Use the image grid below to practice ASL gestures. The app will recognize your gestures in real-time.")
-        image_path = os.path.join("/Users/DELL/Desktop/Project_3/sources/", "image_grid.jpg")
+        image_path = os.path.join("sources", "image_grid.jpg")
         st.sidebar.image(image_path, caption="Image Grid", use_column_width=True)
         # st.sidebar.image('/Users/DELL/Desktop/ASL_marios/sources/image_grid.jpg', caption="Image Grid", use_column_width=True)
 
 
         # filter = "none"
         # Load the pre-trained model and label encoder
-        # model = os.path.join("/Users/DELL/Desktop/ASL_marios", "model_landmarks_augment.pkl")
-        # le = os.path.join("/Users/DELL/Desktop/ASL_marios", "label_encoder_augment.pkl")
-        model = joblib.load('/Users/DELL/Desktop/ASL_marios/model_landmarks_augment.pkl')
-        le = joblib.load('/Users/DELL/Desktop/ASL_marios/label_encoder_augment.pkl')
+        model_path = os.path.join("source", "model_landmarks_augment.pkl")
+        label_path = os.path.join("source", "label_encoder_augment.pkl")
+        model = joblib.load('model_path')
+        le = joblib.load('label_path')
 
         # Initialize mediapipe Hands
         mp_hands = mp.solutions.hands
