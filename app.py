@@ -38,7 +38,7 @@ def main():
         st.write("Welcome to the ASL Gesture Recognition App.")
         st.write("This web app recognizes American Sign Language (ASL) gestures using hand landmarks.")
 
-        image_path = os.path.join("sources", "homepage_image.jpg")
+        image_path = os.path.join("/Users/DELL/Desktop/Project_3/sources", "homepage_image.jpg")
         st.image(image_path, width = 400)
         st.write("""
             ## Overview
@@ -66,7 +66,7 @@ def main():
         # Load the dataset
         csv_path = os.path.join("hand_landmarks_augment.csv")
         df = pd.read_csv(csv_path)
-        df = pd.read_csv('/Users/DELL/Desktop/ASL_marios/hand_landmarks_augment.csv') 
+        # df = pd.read_csv('/Users/DELL/Desktop/ASL_marios/hand_landmarks_augment.csv') 
 
         
 
@@ -92,15 +92,17 @@ def main():
         st.title("Live-Stream")
  
         st.sidebar.success("Use the image grid below to practice ASL gestures. The app will recognize your gestures in real-time.")
-        image_path = os.path.join("sources", "image_grid.jpg")
+        image_path = os.path.join("/Users/DELL/Desktop/Project_3/sources", "image_grid.jpg")
         st.sidebar.image(image_path, caption="Image Grid", use_column_width=True)
         # st.sidebar.image('/Users/DELL/Desktop/ASL_marios/sources/image_grid.jpg', caption="Image Grid", use_column_width=True)
 
 
         # filter = "none"
         # Load the pre-trained model and label encoder
-        model = joblib.load('/Users/DELL/Desktop/ASL_marios/model_landmarks_augment.pkl')
-        le = joblib.load('/Users/DELL/Desktop/ASL_marios/label_encoder_augment.pkl')
+        model = os.path.join("/Users/DELL/Desktop/ASL_marios/", "model_landmarks_augment.pkl")
+        le = os.path.join("/Users/DELL/Desktop/ASL_marios/", "label_encoder_augment.pkl")
+        # model = joblib.load('/Users/DELL/Desktop/ASL_marios/model_landmarks_augment.pkl')
+        # le = joblib.load('/Users/DELL/Desktop/ASL_marios/label_encoder_augment.pkl')
 
         # Initialize mediapipe Hands
         mp_hands = mp.solutions.hands
