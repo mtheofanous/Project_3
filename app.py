@@ -102,8 +102,19 @@ def main():
         # Load the pre-trained model and label encoder
         model_path = os.path.join("source", "model_landmarks_augment.pkl")
         label_path = os.path.join("source", "label_encoder_augment.pkl")
-        model = joblib.load('model_path')
-        le = joblib.load('label_path')
+            # Check if the files exist before attempting to load them
+        if os.path.isfile(model_path) and os.path.isfile(label_path):
+            # Load the pre-trained model and label encoder
+            model = joblib.load(model_path)
+            le = joblib.load(label_path)
+            print("Model and label encoder loaded successfully.")
+        else:
+            if not os.path.isfile(model_path):
+                print(f"Model file not found: {model_path}")
+            if not os.path.isfile(label_path):
+                print(f"Label encoder file not found: {label_path}")
+        # model = joblib.load('model_path')
+        # le = joblib.load('label_path')
 
         # Initialize mediapipe Hands
         mp_hands = mp.solutions.hands
