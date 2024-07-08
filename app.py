@@ -30,7 +30,7 @@ def main():
     st.write("Use the Menu to the left to go to the page of your choice.")
 
     # st.sidebar.success("Navigation")
-    menu = ["Home", "Data", "Model", "Prediction", "Real_time_Recognition"]
+    menu = ["Home", "Data", "Real_time_Recognition"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Home":
@@ -64,7 +64,7 @@ def main():
     elif choice == "Data":
         st.header("Dataset Visualization")
         # Load the dataset
-        csv_path = os.path.join("hand_landmarks_augment.csv")
+        csv_path = os.path.join("/Users/DELL/Desktop/Project_3/hand_landmarks_augment.csv")
         df = pd.read_csv(csv_path)
         # df = pd.read_csv('/Users/DELL/Desktop/ASL_marios/hand_landmarks_augment.csv') 
 
@@ -92,17 +92,17 @@ def main():
         st.title("Live-Stream")
  
         st.sidebar.success("Use the image grid below to practice ASL gestures. The app will recognize your gestures in real-time.")
-        image_path = os.path.join("/Users/DELL/Desktop/Project_3/sources", "image_grid.jpg")
+        image_path = os.path.join("/Users/DELL/Desktop/Project_3/sources/", "image_grid.jpg")
         st.sidebar.image(image_path, caption="Image Grid", use_column_width=True)
         # st.sidebar.image('/Users/DELL/Desktop/ASL_marios/sources/image_grid.jpg', caption="Image Grid", use_column_width=True)
 
 
         # filter = "none"
         # Load the pre-trained model and label encoder
-        model = os.path.join("/Users/DELL/Desktop/ASL_marios/", "model_landmarks_augment.pkl")
-        le = os.path.join("/Users/DELL/Desktop/ASL_marios/", "label_encoder_augment.pkl")
-        # model = joblib.load('/Users/DELL/Desktop/ASL_marios/model_landmarks_augment.pkl')
-        # le = joblib.load('/Users/DELL/Desktop/ASL_marios/label_encoder_augment.pkl')
+        # model = os.path.join("/Users/DELL/Desktop/ASL_marios", "model_landmarks_augment.pkl")
+        # le = os.path.join("/Users/DELL/Desktop/ASL_marios", "label_encoder_augment.pkl")
+        model = joblib.load('/Users/DELL/Desktop/ASL_marios/model_landmarks_augment.pkl')
+        le = joblib.load('/Users/DELL/Desktop/ASL_marios/label_encoder_augment.pkl')
 
         # Initialize mediapipe Hands
         mp_hands = mp.solutions.hands
@@ -119,8 +119,8 @@ def main():
             def __init__(self):
                 self.hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2, min_detection_confidence=0.7, min_tracking_confidence=0.7)
                 self.predictions = deque(maxlen=10)
-                # self.last_predicted_gesture = ""
-                # self.gesture_history = ""
+                self.last_predicted_gesture = ""
+                self.gesture_history = ""
 
             def transform(self, frame: av.VideoFrame):
                 img = frame.to_ndarray(format="bgr24")
@@ -164,7 +164,7 @@ def main():
                         smoothed_prediction = max(set(self.predictions), key=self.predictions.count)
 
                         # Update last predicted gesture
-                        # self.last_predicted_gesture = f'Predicted Gesture: {smoothed_prediction}'
+                        self.last_predicted_gesture = f'Predicted Gesture: {smoothed_prediction}'
 
                         # Draw a bounding box around the hand
                         x1, y1 = int(min(x_) * W) - 10, int(min(y_) * H) - 10
@@ -177,12 +177,12 @@ def main():
 
                 return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-        webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False)
-        # if ctx.video_transformer:
-        #     st.write("### Predictions")
-        #     st.write(ctx.video_transformer.last_predicted_gesture)
-        #     st.write("### Gesture History")
-        #     st.write(ctx.video_transformer.gesture_history)
+        ctx = webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False)
+        if ctx.video_transformer:
+            st.write("### Predictions")
+            st.write(ctx.video_transformer.last_predicted_gesture)
+            st.write("### Gesture History")
+            st.write(ctx.video_transformer.gesture_history)
 
 
 
