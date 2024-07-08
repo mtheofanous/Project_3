@@ -11,7 +11,7 @@ import joblib
 import mediapipe as mp
 from collections import deque
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
-from data import visualizaciones_datasets, show_random_image
+from data import visualizaciones_datasets, show_random_image, show_image, load_gesture
 import av
 import subprocess
 import requests
