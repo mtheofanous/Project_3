@@ -12,25 +12,37 @@ import mediapipe as mp
 from collections import deque
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 from data import visualizaciones_datasets, show_random_image, show_image, load_gesture
+from metrics import confusion_matrix, classification_report
 import av
 import subprocess
 import requests
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module='google.protobuf')
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 # Set environment variables to suppress TensorFlow logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-st.set_page_config(page_title = "DSB01RT",
-                   page_icon = ":panda_face:",
+# load model and label encoder
+model_path = os.path.join("sources", "model_landmarks_augment.pkl")
+label_path = os.path.join("sources", "label_encoder_augment.pkl")
+
+
+path = './sources/'
+
+st.set_page_config(page_title = "ASL_Gesture_Recognition_App",
+                   page_icon = "🧊",
                    layout = 'centered',
                    initial_sidebar_state = 'expanded')
-
 
 def main():
     st.title("ASL Gesture Recognition App.")
     st.write("Use the Menu to the left to go to the page of your choice.")
 
     # st.sidebar.success("Navigation")
-    menu = ["Home", "Data", "Real_time_Recognition"]
+    menu = ["Home", "Metrics and Visualization", "Real_time_Recognition"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Home":
@@ -38,7 +50,7 @@ def main():
         st.write("Welcome to the ASL Gesture Recognition App.")
         st.write("This web app recognizes American Sign Language (ASL) gestures using hand landmarks.")
 
-        image_path = os.path.join("sources", "homepage_image.jpg")
+        image_path = os.path.join(path, "homepage_image.jpg") 
         st.image(image_path, width = 400)
         st.write("""
             ## Overview
@@ -61,13 +73,14 @@ def main():
             - **Increased Robustness**: Hand landmarks provide a more invariant and robust representation of gestures compared to raw pixel data, which can be affected by variations in lighting, background, and other noise.
             - **Relevance**: Hand landmarks contain the essential information needed to distinguish between different ASL gestures, making them an efficient choice for classification.
         """)
-    elif choice == "Data":
-        st.header("Dataset Visualization")
+    elif choice == "Metrics and Visualization":
+        st.header("Metrics and Visualization")
         # Load the dataset
         csv_path = os.path.join("sources", "hand_landmarks_augment.csv")
         df = pd.read_csv(csv_path)
         
         data_choice = st.sidebar.selectbox("Data Analysis", ["Show Dataset", "Label Distribution", "Show hand landmarks"])
+        metrics_choice = st.sidebar.selectbox("Metrics", ["Confusion Matrix", "Classification Report"])
 
         if data_choice == "Show Dataset":
             st.write("### Dataset")
@@ -82,8 +95,29 @@ def main():
             st.sidebar.write("### Hand Gesture Image")
             letter = st.sidebar.text_input("Enter a letter (A-Z):", 'B')
             if letter:
-                show_random_image(letter, data_dir=r'C:\Users\DELL\Desktop\Project_3\asl_alphabet_test')
+                show_random_image(letter, data_dir=r'C:\Users\DELL\Desktop\Project_3\sources\asl_alphabet_test')
     
+        if metrics_choice == "Confusion Matrix":
+            st.write("### Confusion Matrix")
+
+            # Load the test data
+            test_data = pd.read_csv(os.path.join("sources", "hand_landmarks_test.csv"))
+            X_test = test_data.drop("label", axis=1)
+            y_test = test_data["label"]
+
+            y_pred = model.predict(X_test)
+
+            # compute the confusion matrix
+            conf_matrix = confusion_matrix(y_test, y_pred, le.classes_)
+            st.pyplot()
+
+        elif metrics_choice == "Classification Report":
+            st.write("### Classification Report")
+            report = classification_report(y_test, y_pred, le.classes_)
+            report_df = pd.DataFrame(report).transpose()
+            st.dataframe(report_df)
+
+
     elif choice == "Real_time_Recognition":
 
         st.title("Live-Streaming ASL Gesture Recognition App")
@@ -96,8 +130,8 @@ def main():
 
         # filter = "none"
         # Load the pre-trained model and label encoder
-        model_path = os.path.join("source", "model_landmarks_augment.pkl")
-        label_path = os.path.join("source", "label_encoder_augment.pkl")
+        model_path = os.path.join("sources", "model_landmarks_augment.pkl")
+        label_path = os.path.join("sources", "label_encoder_augment.pkl")
             # Check if the files exist before attempting to load them
         if os.path.isfile(model_path) and os.path.isfile(label_path):
             # Load the pre-trained model and label encoder
@@ -109,8 +143,7 @@ def main():
                 print(f"Model file not found: {model_path}")
             if not os.path.isfile(label_path):
                 print(f"Label encoder file not found: {label_path}")
-        # model = joblib.load('model_path')
-        # le = joblib.load('label_path')
+  
 
         # Initialize mediapipe Hands
         mp_hands = mp.solutions.hands
@@ -126,12 +159,25 @@ def main():
         class VideoTransformer(VideoTransformerBase):
             def __init__(self):
                 self.hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
-                # self.predictions = deque(maxlen=10) 
+                self.predictions = deque(maxlen=10) 
                 self.last_predicted_gesture = None
                 self.gesture_history = []
+                self.frame_skip = 2 # new
+                self.counter = 0 # new
 
             def transform(self, frame: av.VideoFrame):
-                img = frame.to_ndarray(format="bgr24")
+                self.counter += 1 # new
+                if self.counter % self.frame_skip != 0:
+                    return frame
+                
+                img = frame.to_ndarray(format="bgr24") 
+
+                img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                # why not rgb24?
+
+
+                img_rgb = cv2.resize(img, (640, 480)) # new
+                
 
                 # Process the frame to find hand landmarks
                 frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -185,20 +231,18 @@ def main():
 
                 return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-        ctx = webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False, async_transform=False)
-        # if ctx.video_transformer:
-        if ctx.state.playing:
+        ctx = webrtc_streamer(key="streamer", video_frame_callback=VideoTransformer().transform, sendback_audio=False)
+        if ctx.video_transformer is not None:
             st.write("### Predictions")
-            if hasattr(ctx.video_transformer, 'last_predicted_gesture'):
-                st.write(ctx.video_transformer.last_predicted_gesture)
-            else:
-                st.write("No gesture prediction available.")
-            
-            st.write("### Gesture History")
-            if hasattr(ctx.video_transformer, 'gesture_history'):
-                st.write(ctx.video_transformer.gesture_history)
-            else:
-                st.write("No gesture history available.")
+        
+            # Display the last predicted gesture
+            st.write(ctx.video_transformer.last_predicted_gesture)
+        else:
+            st.write("### Predictions")
+            st.write("No gesture detected yet.")
+
+
+
 
 
 if __name__ == "__main__":
