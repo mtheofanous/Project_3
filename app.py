@@ -158,26 +158,24 @@ def main():
             def __init__(self):
                 self.hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.7)
                 self.predictions = deque(maxlen=10) 
-                self.last_predicted_gesture = None
+                self.last_predicted_gesture = "No gesture detected yet."
                 self.gesture_history = []
-                self.frame_skip = 2 # new
-                self.counter = 0 # new
+
+
 
             def transform(self, frame: av.VideoFrame):
-                self.counter += 1 # new
-                if self.counter % self.frame_skip != 0:
-                    return frame
-                
-                img = frame.to_ndarray(format="bgr24") 
+
+                img = frame.to_ndarray(format= "bgr24") 
 
                 img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
               
-                img_rgb = cv2.resize(img, (640, 480)) # new
-                img_rgb.flags.writeable = False
+                # img_rgb = cv2.resize(img, (200, 200)) # new
+                img_rgb.flags.writeable = False # prevent modification of the image data and improve performance
+                results = self.hands.process(img_rgb)
 
-                # Process the frame to find hand landmarks
-                frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                results = self.hands.process(frame_rgb)
+                # # Process the frame to find hand landmarks
+                # frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                # results = self.hands.process(frame_rgb)
 
                 H, W, _ = img.shape
 
@@ -237,6 +235,7 @@ def main():
             st.write("### Predictions")
             st.write("No gesture detected yet.")
 
+        
 
 if __name__ == "__main__":
     main()
