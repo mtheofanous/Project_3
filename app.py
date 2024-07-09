@@ -4,15 +4,16 @@ import pandas as pd
 # from sklearn.ensemble import RandomForestClassifier
 # from sklearn.model_selection import train_test_split
 # from sklearn.preprocessing import LabelEncoder
-# from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import numpy as np
 import cv2
 import joblib
 import mediapipe as mp
 from collections import deque
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+
 from data import visualizaciones_datasets, show_random_image, show_image, load_gesture
-from metrics import confusion_matrix, classification_report
+from metrics import load_model_and_label_encoder, load_test_data, plot_confusion_matrix, generate_classification_report
 import av
 import subprocess
 import requests
@@ -25,19 +26,15 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-# load model and label encoder
-model_path = os.path.join("sources", "model_landmarks_augment.pkl")
-label_path = os.path.join("sources", "label_encoder_augment.pkl")
-
-
 path = './sources/'
 
 st.set_page_config(page_title = "ASL_Gesture_Recognition_App",
-                   page_icon = "🧊",
+                   page_icon = "hand",
                    layout = 'centered',
                    initial_sidebar_state = 'expanded')
 
 def main():
+    
     st.title("ASL Gesture Recognition App.")
     st.write("Use the Menu to the left to go to the page of your choice.")
 
@@ -76,11 +73,14 @@ def main():
     elif choice == "Metrics and Visualization":
         st.header("Metrics and Visualization")
         # Load the dataset
-        csv_path = os.path.join("sources", "hand_landmarks_augment.csv")
+        csv_path = os.path.join(path, "hand_landmarks_augment.csv")
         df = pd.read_csv(csv_path)
         
-        data_choice = st.sidebar.selectbox("Data Analysis", ["Show Dataset", "Label Distribution", "Show hand landmarks"])
-        metrics_choice = st.sidebar.selectbox("Metrics", ["Confusion Matrix", "Classification Report"])
+        data_choice = st.sidebar.selectbox("Data Analysis and Metrics", 
+                                           ["Show Dataset", 
+                                            "Label Distribution", 
+                                            "Show hand landmarks",
+                                            "Confusion Matrix", "Classification Report"])
 
         if data_choice == "Show Dataset":
             st.write("### Dataset")
@@ -97,26 +97,40 @@ def main():
             if letter:
                 show_random_image(letter, data_dir=r'C:\Users\DELL\Desktop\Project_3\sources\asl_alphabet_test')
     
-        if metrics_choice == "Confusion Matrix":
-            st.write("### Confusion Matrix")
-
+        elif data_choice == "Confusion Matrix":
+            # Load the model and label encoder
+            model, le = load_model_and_label_encoder()
             # Load the test data
-            test_data = pd.read_csv(os.path.join("sources", "hand_landmarks_test.csv"))
-            X_test = test_data.drop("label", axis=1)
-            y_test = test_data["label"]
+            X_test, y_test = load_test_data()
 
             y_pred = model.predict(X_test)
 
-            # compute the confusion matrix
-            conf_matrix = confusion_matrix(y_test, y_pred, le.classes_)
-            st.pyplot()
+            # Inverse transform the labels
 
-        elif metrics_choice == "Classification Report":
-            st.write("### Classification Report")
-            report = classification_report(y_test, y_pred, le.classes_)
-            report_df = pd.DataFrame(report).transpose()
-            st.dataframe(report_df)
+            y_test_trans = le.inverse_transform(y_test)
+            y_pred_trans = le.inverse_transform(y_pred)
 
+            cm = confusion_matrix(y_test_trans, y_pred_trans)
+
+            if cm.size == 0:
+                st.error("Unable to compute confusion matrix.")
+            else:
+                st.write("### Confusion Matrix")
+                fig = plot_confusion_matrix(cm)
+                if fig:
+                    st.pyplot(fig)
+
+
+        elif data_choice == "Classification Report":
+
+            # Load the model and label encoder
+            model, le = load_model_and_label_encoder()
+            # Load the test data
+            X_test, y_test = load_test_data()
+
+            y_pred = model.predict(X_test)
+
+            generate_classification_report(model=model, le=le, y_test=y_test, y_pred=y_pred)
 
     elif choice == "Real_time_Recognition":
 
@@ -125,25 +139,9 @@ def main():
         st.sidebar.success("Use the image grid below to practice ASL gestures. The app will recognize your gestures in real-time.")
         image_path = os.path.join("sources", "image_grid.jpg")
         st.sidebar.image(image_path, caption="Image Grid", use_column_width=True)
-        # st.sidebar.image('/Users/DELL/Desktop/ASL_marios/sources/image_grid.jpg', caption="Image Grid", use_column_width=True)
 
-
-        # filter = "none"
         # Load the pre-trained model and label encoder
-        model_path = os.path.join("sources", "model_landmarks_augment.pkl")
-        label_path = os.path.join("sources", "label_encoder_augment.pkl")
-            # Check if the files exist before attempting to load them
-        if os.path.isfile(model_path) and os.path.isfile(label_path):
-            # Load the pre-trained model and label encoder
-            model = joblib.load(model_path)
-            le = joblib.load(label_path)
-            print("Model and label encoder loaded successfully.")
-        else:
-            if not os.path.isfile(model_path):
-                print(f"Model file not found: {model_path}")
-            if not os.path.isfile(label_path):
-                print(f"Label encoder file not found: {label_path}")
-  
+        model, le = load_model_and_label_encoder() 
 
         # Initialize mediapipe Hands
         mp_hands = mp.solutions.hands
@@ -173,11 +171,9 @@ def main():
                 img = frame.to_ndarray(format="bgr24") 
 
                 img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                # why not rgb24?
-
-
+              
                 img_rgb = cv2.resize(img, (640, 480)) # new
-                
+                img_rgb.flags.writeable = False
 
                 # Process the frame to find hand landmarks
                 frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -240,9 +236,6 @@ def main():
         else:
             st.write("### Predictions")
             st.write("No gesture detected yet.")
-
-
-
 
 
 if __name__ == "__main__":
