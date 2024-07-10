@@ -34,20 +34,13 @@ st.set_page_config(page_title = "ASL_Gesture_Recognition_App",
 def main():
     
     st.title("ASL Gesture Recognition App.")
-    st.write("Use the Menu to the left to go to the page of your choice.")
 
     # st.sidebar.success("Navigation")
     menu = ["Home", "Metrics and Visualization", "Real_time_Recognition"]
     choice = st.sidebar.selectbox("Menu", menu)
 
     if choice == "Home":
-        st.subheader("Home")
-        st.write("Welcome to the ASL Gesture Recognition App.")
-        st.write("This web app recognizes American Sign Language (ASL) gestures using hand landmarks.")
-
-        # # button for load random image
-        # if st.button("Show Random Image"):
-        #     show_random_image()
+        st.subheader("This web app recognizes American Sign Language (ASL) gestures using hand landmarks.")
 
         image_path = os.path.join(path, "homepage_image.jpg") 
         st.image(image_path, use_column_width=True, caption="American Sign Language (ASL) Gestures", width=400)
