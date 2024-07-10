@@ -45,8 +45,14 @@ def main():
         st.write("Welcome to the ASL Gesture Recognition App.")
         st.write("This web app recognizes American Sign Language (ASL) gestures using hand landmarks.")
 
+        # # button for load random image
+        # if st.button("Show Random Image"):
+        #     show_random_image()
+
         image_path = os.path.join(path, "homepage_image.jpg") 
-        st.image(image_path, width = 400)
+        st.image(image_path, use_column_width=True, caption="American Sign Language (ASL) Gestures", width=500)
+
+
         st.write("""
             ## Overview
             American Sign Language (ASL) is a complete language that uses gestures and visual signs to communicate with people who are deaf or hard of hearing. ASL has its own grammar and syntax, making it a fully-fledged language in its own right.
@@ -54,8 +60,15 @@ def main():
             ## Dataset
             The dataset used for this project is sourced from Kaggle’s ASL Alphabet dataset. It contains:
             - **Training Data**: 87,000 images of ASL gestures, each of size 200x200 pixels.
+            
             - **Categories**: 29 labeled categories including letters A-Z and additional gestures like "del", "nothing", and "space".
-
+            """)
+        
+        # button for load random image
+        if st.button("Show Random Image"):
+            load_gesture(path=path + 'asl_alphabet_test')
+            
+        st.write("""
             ## Approaches Considered
             We considered three potential approaches to solve this problem:
             1. **Using the Whole Image**: This approach involves training a model on the entire image of the gesture.
