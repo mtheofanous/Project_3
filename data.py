@@ -24,6 +24,7 @@ connection_style = mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2)
 
 def visualizaciones_datasets(df):
 
+
     labels = df['label'].value_counts().reset_index()
     labels.columns = ['label', 'count']
     labels['percentage'] = (labels['count'] / len(df)) * 100
@@ -35,12 +36,14 @@ def visualizaciones_datasets(df):
     plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     ax.axis('equal')
     st.pyplot(fig)
+
+
 def show_image(image_path):
 
     image = Image.open(image_path)
     st.image(image, caption='Uploaded Image', use_column_width=True)
 
-def load_gesture(gesture='random', path='data_path_1'):
+def load_gesture(gesture='random', path='data_path'):
 
     # List the folders (gestures) in the dataset
     gestures = os.listdir(path)
@@ -83,6 +86,10 @@ def show_random_image(letter, data_dir='data_path'):
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     
     results = hands.process(img_rgb)
+
+    # Define the styles for drawing
+    landmark_style = mp_drawing.DrawingSpec(color=(255, 0, 0), thickness=2, circle_radius=2)
+    connection_style = mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2)
     
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:

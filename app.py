@@ -50,7 +50,7 @@ def main():
         #     show_random_image()
 
         image_path = os.path.join(path, "homepage_image.jpg") 
-        st.image(image_path, use_column_width=True, caption="American Sign Language (ASL) Gestures", width=500)
+        st.image(image_path, use_column_width=True, caption="American Sign Language (ASL) Gestures", width=400)
 
 
         st.write("""
@@ -67,7 +67,7 @@ def main():
         # button for load random image
         if st.button("Show Random Image"):
             load_gesture(path=path + 'asl_alphabet_test')
-            
+
         st.write("""
             ## Approaches Considered
             We considered three potential approaches to solve this problem:
@@ -81,6 +81,11 @@ def main():
             - **Increased Robustness**: Hand landmarks provide a more invariant and robust representation of gestures compared to raw pixel data, which can be affected by variations in lighting, background, and other noise.
             - **Relevance**: Hand landmarks contain the essential information needed to distinguish between different ASL gestures, making them an efficient choice for classification.
         """)
+        if st.button("Hand Landmarks Example"):
+    
+            image_path = os.path.join(path, "21-3D-hand-landmarks-localized-by-MediaPipe-hand-tracking-model.png") 
+            st.image(image_path, use_column_width=True, width=400)
+
     elif choice == "Metrics and Visualization":
         st.header("Metrics and Visualization")
         # Load the dataset
